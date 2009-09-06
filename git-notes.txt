@@ -1,0 +1,132 @@
+Groningen, 6 september 2009
+
+
+
+Git Quick Start
+
+	cd <project directory>
+	git init
+	git add . (add all files in directory)
+	git commit -m 'Initial commit'
+	
+
+Introduce yourself to Git
+
+	git config --global user.name "Your Name"
+	git config --global user.mail "me@email.com"
+	
+
+Working with TextMate
+
+	git --config --global core.editor "mate -w"
+	
+
+Tags
+
+	git tag <tag-name>
+	
+
+Admire Your Work
+
+	git log
+	git log -n3 (or, other number)
+	git log --stat --summary
+	
+
+View Changes
+	
+	View changes you haven't committed yet:
+		
+		git log
+		
+	View changes between different versions of your project
+	
+		git log --pretty=oneline	(getting the commit ids)
+		git diff 8fef..c6e7			(8fef = first four digits of commit id)
+		
+	View the last changes
+	
+		git diff HEAD^..HEAD
+		
+		
+Fixing Mistakes
+
+	Throw away all changes, that you haven't committed yet
+	
+		git reset --hard
+		
+	Same as above but for individual files
+	
+		git checkout <myfile>
+		
+	Re-enter a commit message
+	
+		git commit --ammend
+		
+	Forgot something in last commit?
+	
+		git reset --soft HEAD^
+		git add <files>
+		git commit
+	
+	
+Cloning and Creating a Patch
+	
+	git clone git://github.com/git/hello-world.git
+	cd hello-world
+	(edit files)
+	git add <files>
+	git commit -m 'Explain what changed'
+	git format -patch origin/master
+	
+
+Simple Workflow
+
+	git status
+	git diff
+	git add <files>
+	git commit
+	
+	
+GitHub
+
+	http://github.com/guides/setting-up-a-remote-repository-using-github-and-osx	
+	
+	
+	git remote add origin git@github.com:<accountname>/<projectname>.git
+	git push origin master
+	<enter password>
+	
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
