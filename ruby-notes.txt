@@ -1,0 +1,347 @@
+Groningen, 5 september 2009
+
+Beginning Ruby From Novice to Professional 2nd edition
+
+Chp 7 Project and Libraries
+
+	p 197 Inclusions from other libraries
+	
+		Ruby stores the list of dirs to search for included files in a special 
+		variable called $: (or, $LOAD_PATH).
+	
+		Adding extra dirs to this: 
+	
+				$:.push '/your/directory/here'
+				require 'yourfile'
+	
+		Commonly used shortcut to quickly load a collection of libraries:
+	
+				%w{ file1 file2 file3 }.each { |l| require l}
+			
+	p 202 RubyGems
+	
+		Finding Gems: 
+		
+				gem list
+				gem list --remote
+				gem query --remote --name-matches class
+				
+				
+		Installing Gems:
+		
+				gem install <gem-name>
+				
+				
+		Using Gems:
+		
+				require 'rubygems'
+				require '<gem-name>'
+				
+				
+		Upgrading and uninstalling Gems:
+		
+				gem update
+				gem uninstall <gem-name>
+				
+	
+				
+Chp 8 Documentation, Error Handling, Debugging, and Testing
+
+	p 212 Generating documentation using RDoc
+	
+		rdoc yourfile.rb
+		
+		
+	p 213 RDoc Techniques
+	
+		Basic formatting
+		
+			#= Title
+			
+			#== Heading
+			
+			#* Item in outer list
+			
+			# * Item in inner list
+			
+				
+		Modifiers and Options
+	
+			#:nodoc:		ignore certain modules, classes, or methods
+			
+			#:nodoc: all	ignores current element and all those beneath it
+			
+			#--				temporarily turn rdoc off
+			
+			#++				turn rdoc on 
+			 
+	
+	p 217 Debugging and Errors
+	
+		Raising Exceptions
+			
+			raise <exception> or, raise (you will get a generic RuntimeError exception)
+			
+			ex.
+				
+				class Person
+					def initialize(name)
+						raise ArgumentError, "No name present" if name.empty?
+					end
+				end
+				
+			Create your own type of exception
+			
+			ex.
+			
+				class BadDataException < RuntimeError
+				end
+								
+				class Person
+					def initialize(name)
+						raise BadDataException, "No name present" if name.empty?
+					end
+				end
+		
+		
+		Handling Exceptions
+		
+			begin
+				.... code here ...
+			rescue [Exception1]
+				... code to rescue Exception1 here ...
+			rescue [Exception2]
+				... code to rescue Exception2 here ...		
+			rescue
+				... code that rescues all other types of exceptions here ...
+			end
+			
+			ex. 
+			
+				begin 
+					puts 10 / 0
+				rescue
+					puts "You caused an error!"
+				end
+		
+				
+		Handling Passed Exceptions
+		
+			ex. 
+			
+				begin 
+					puts 10 / 0
+				rescue => e
+					puts e.class
+				end
+				
+				
+		Cath and Throw
+		
+			Sometimes you want to be able to break out of a loop in a similar way to an 
+			expression , but without actually generating an error. Ruby provides two 
+			methods catch and throw, for this purpose.
+			
+			ex. 
+				
+				catch(:finish) do
+					1000.times do 
+						x = rand(1000)
+						throw :finish if x == 123
+					end
+				end
+								
+			or, 
+			
+				def generate_random_nr
+					x = rand(1000)
+					throw :finish if x == 123
+				end
+				
+				catch(:finish) do
+					1000.times { generate_random_nr}
+				end
+			
+
+		The Ruby Debugger
+	
+			ruby -r debug file.rb
+			
+			debugger prompt commands:
+			
+				list		lists the lines of the program currently being worked upon
+				list 2-10	
+			
+				step		runs the next line of the program
+				
+				cont		runs the program without stepping
+				
+				break		sets a breakpoint at a particular line, break 14
+				
+				watch		sets a condition breakpoint, watch x > 10
+				
+				quit		exits the debugger
+				
+				
+			p 223 example of a simple debugging session
+			
+	
+
+	p 224 Testing
+	
+		Use a combination of raise, unless, and ==
+		
+		ex.
+		
+			raise "Fial 1" unless "this is test".titelize == "This Is A Test"
+			
+		
+		Unit Testing
+		
+			It means that you're testing each individual functionality. The official Ruby
+			library for performing unit tests is Test::Unit
+			
+			How to use?
+			
+				require 'test/unit'
+				
+				class TestSomething < Test::Unit::TestCase
+					def test_basic
+						assert_equal("THIS IS A TEST", "This is a test".upcase)
+					end
+				end
+				
+			
+			assert_equal(expected, actual) :passes only if expected and actual are equal
+			 
+			assert(<boolean expression>) :passes only if boolean expr. is not false or nil
+			
+			assert_not_equal(expected, actual) :passes only if expected and actual are not equal
+
+			assert_raise(exception_type, ..) {<code block>} 
+			
+			assert_nothing_raised(exception_type, ..) {<code block>}
+			
+			assert_instance_of(class_expeceted, object)
+			
+			flunk :special type of assertion: it always fails!
+			
+			
+	
+	p 230 Benchmarking and Profiling
+	
+		Simple Benchmarking
+		
+		Benchmarking us the process of measuring the total time it takes to achieve something
+		and comparing those results between different versions of code.
+		
+		ex.
+			
+			require 'benchmark'
+				
+			puts Benchmark.measure { 10000.times { print "." } }
+				
+		or
+			
+			require 'benchmark'
+			
+			b = Benchmark.measure do
+				1000.times do |i|
+					x = i
+				end
+			end
+			
+			puts b
+			
+			
+		or
+		
+			require 'benchmark'
+			
+			Benchmark.bm do |bm|
+				bm.report("for:") do
+					for i in 1..1000000 do
+						x = i
+					end
+				end
+				bm.report("times:") do
+					100000.times do |i|
+						x = i
+					end
+				end
+			end
+			
+		Instead of using bm you can use bmbm, this method repeats the benchmark set twice
+			
+			
+	p 232 Profiling
+	
+		Profiling tells you what code is taking what amount of time.
+		
+		ex.
+		
+			require 'profile'
+			
+			class Calculator
+				def self.count_to_large_nr
+					x = 0
+					1000000.times { x += 1 }
+				end
+			end
+			
+			Calculator.count_to_large_nr
+			
+		
+	
+	
+Chp 9 Files and Databases
+
+					
+			
+				
+					
+				
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
