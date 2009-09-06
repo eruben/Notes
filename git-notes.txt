@@ -97,7 +97,16 @@ GitHub
 	git push origin master
 	<enter password>
 	
-
+	Workflow
+	
+		git status
+		git diff
+		git add <files>
+		git commit 
+		git push
+		
+	
+	
 
 
 
