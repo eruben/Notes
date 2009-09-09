@@ -136,7 +136,7 @@ Chp 8 Documentation, Error Handling, Debugging, and Testing
 				end
 				
 				
-		Cath and Throw
+		Catch and Throw
 		
 			Sometimes you want to be able to break out of a loop in a similar way to an 
 			expression , but without actually generating an error. Ruby provides two 
@@ -296,12 +296,369 @@ Chp 8 Documentation, Error Handling, Debugging, and Testing
 	
 Chp 9 Files and Databases
 
-					
+	p 239 File I/O
+	
+		Opening and Reading Files
+		
+			File.open("text.txt").each { |line| puts line }
+		
+			File.open("text.txt", "r").each { |line| puts line }
 			
+			
+			What's the difference between File.new and File.open?
+			
+			File.open can accept a code block, and once the code block is finished, the file
+			will be closed automatically.
+			
+				File.open("text.txt") do |f|
+					puts f.gets
+				end
 				
-					
+			File.new only returns a File object referring to the file. To close the file, you
+			have to use its close method.
+			
+				f = File.new("text.txt", "r")
+				puts f.gets
+				f.close
 				
 		
+		More File-Reading Techniques
+		
+			You can read an I/O stream:
+			
+			1) line by line using each:
+			
+				File.open("text.txt").each { |line| puts line }
+			
+			2) with each using a custom delimiter:
+			
+				File.open("text.txt").each(',') { |line| puts line }
+			
+			3) byte by byte with each_byte:
+			
+				File.open("text.txt").each_byte { |byte| puts byte }			
+			
+			4) character by character with each_char(ruby 1.9):
+			
+				File.open("text.txt").each_char { |char| puts char }
+				
+			5) line by line using gets:
+			
+				File.open("text.txt") do |f|
+					2.times { puts f.gets }
+				end
+				
+			6) with gets using a custom delimiter:
+			
+				File.open("text.txt") do |f|
+					2.times { puts f.gets(',') }
+				end
+			
+			7) byte by byte with getc:
+			
+				File.open("text.txt") do |f|
+					2.times { puts f.getc }
+				end
+			
+			8) read an entire file into an array, split by lines:
+			
+				File.open("text.txt").readlines.join("--")
+				
+			9) read an arbitary number of bytes from a file into a single variable using read:
+			
+				File.open("text.txt") do |f|
+					puts f.read(6)
+				end
+				
+			Shortcuts:
+			
+				Instead of: 	File.open(filename).read
+				use:			data = File.read(filename)
+				
+				or:				array_of_lines = File.readlines(filename)
+				
+			
+					
+		Your Position Within a File
+		
+			When reading a file, it can be useful to know where you are.
+			
+			f = File.open("text.txt")
+			puts f.pos		# always 0 before reading any text from a file
+			puts f.gets
+			puts f.pos
+		
+			You can also use pos=
+			
+			f.pos = 8
+			puts f.gets
+			puts f.pos
+			
+		
+		Writing to Files
+		
+			File.open("text.txt", "w") do |f|
+				f.puts "This is a test"
+			end
+		
+			f = File.new("logfile.txt", "a")
+			f.puts Time.now
+			f.close
+		
+			f = File.open("text.txt", "r+")
+			f.write "123456" # or f.putc "X"
+			f.close 
+
+		
+		Renaming and Deleting Files
+		
+			File.rename("file1.txt", "file2.txt")
+			
+			File.delete("file1.txt")
+			File.delete("file1.txt", "file2.txt","file3.txt")
+			
+		
+		File Operations
+			
+			Creating Filenames Platform-Independently
+			
+				File.join('full', 'path', 'here', 'filename.txt')
+				# full/path/here/filename.txt unix
+				# full\path\here\filename.txt windows
+		
+				Absolute paths:
+				
+				File.join(File::SEPARATOR, 'full', 'path', 'here', 'filename.txt')
+				# /full/path/here/filename.txt
+				
+				Turn basic filenames into complete paths:
+				
+				File.expand_path('text.txt')
+				#/Users/peter/text.txt
+				
+			Seeking
+			
+				seek has three modes of operation:
+					
+					1) IO::SEEK_CUR seeks a certain number of bytes ahead of current position
+					2) IO::SEEK_END	seeks to a position based on the end of the file
+					3) IO::SEEK_SET seeks to an absolute position in the file
+					
+					To position the file pointer 5 bytes from the end of the file and change
+					the character to X, you would use seek as follows:
+					
+						f = File.new("test.txt", "r+")
+						f.seek(-5, IO::SEEK_END)
+						f.putc "X"
+						f.close
+			
+			Finding Out When a File Was Last Modified
+			
+				t = File.mtime("text.txt")
+				puts t.hour
+				puts t.min
+				puts t.sec
+				puts t
+				
+				
+			Checking Wheter a File Exists
+			
+				puts "it exists!" if File.exists?("file.txt")
+				
+			Getting the Size of a File
+			
+				puts File.size("text.txt")
+				
+			How to Know When You're at the End of a File
+			
+				f = File.new("text.txt", "r")
+				f.eof?
+				
+			
+		Directories
+			
+			Navigating Through Directories
+			
+				To change directory:
+				
+					Dir.chdir("/usr/bin")
+					
+				Find out the current directory:
+				
+					Dir.pwd
+					
+				Get a list of the files and directories within a specific directory
+				
+					Dir.entries("/usr/bin").join(' ')
+					
+					Dir.foreach("/usr/bin") do |entry|
+						puts entry
+					end
+					
+					Dir["/usr/bin/*"]
+					
+					Dir[File.join(File::SEPARATOR, 'usr', 'bin', '*')]
+					
+			Creating a Directory
+			
+				Dir.mkdir("mydir")
+				
+			Deleting a Directory
+			
+				Dir.delete("mydir")
+			
+				If a directory isn't empty, you cannot delete it. You need to iterate through 
+				each of the subdirectories and files and remove them all first.
+				
+				Or, 
+				
+					require 'fileutils'
+					FileUtils.rm_f("mydir")
+					
+			Creating Files in the Temporary Directory
+			
+				require 'tmpdir'
+				puts Dir.tmpdir
+				
+				
+				Create a platform-independent way of creating a temporay file:
+				
+					require 'tmpdir'
+					tempfilename = File.join(Dir.tmpdir, "myapp.dat")
+					tempfile = File.new(tempfilename, "w")
+					tempfile.puts "This is only temporary"
+					tempfile.close
+					File.delete(tempfilename)
+					
+				Or use standard library
+				
+					require 'tempfile'
+					f = Tempfile.new('myapp')
+					f.puts "Hello"
+					puts f.path
+					f.close 
+					
+					tempfile automatically deletes the files after they have been used.
+					
+					
+	p 255 Basic Databases
+	
+		Text File Databases
+		
+			Reading and Searching CSV Data
+			
+				Reading:
+				
+				require 'cvs'
+				CSV.open('text.txt', 'r').each do |person|
+					puts person.inspect
+				end
+				
+				require 'cvs'
+				people = CSV.parse(File.read('text.txt'))
+				puts people[0][0]
+				puts people[1][0]
+					
+				require 'csv'
+				puts CSV.read('text.txt').inspect
+				
+				Searching:
+				
+				require 'csv'
+				people = CSV.read('text.txt')
+				laura = people.find { |person| person[0] =~ /Laura/ }
+				puts laura.inspect
+				
+				young_people = people.find_all do |p|
+					p[3].to_i.between?(20, 40)
+				end
+				puts young_people.inspect
+				
+				
+			Saving Data Back to the CSV File
+			
+				require 'csv'
+				people = CSV.read('text.txt')
+				laura = people.find { |person| person[0] =~ /Laura/ }
+				laura[0] = "Lauren Smithens"
+				
+				CSV.open('text.txt', 'w') do |csv|
+					people.each do |person|
+						csv << person
+					end
+				end
+				
+		
+		Storing Objects and Data Structures
+		
+			PStore
+			
+				PStore is a core Ruby library that stores objects and structures in a file.
+				later on, you can reload the objects back into memory from the files.
+				This is known as object persistence, and relies on a technique called 
+				marshalling.
+				
+				# Creating a person object
+				class Person
+					attr_accessor :name, :job, :gender, :age
+				end
+				
+				fred = Person.new
+				fred.name = 'Fred'
+				fred.age = 45
+				
+				# saving the object
+				require 'pstore'
+				store = PStore.new('storagefile')
+				store.transaction do
+					store[:people] ||= Array.new
+					store[:people] << fred
+				end
+					
+				#retrieve object
+				people =[]
+				store.transaction do
+					people = store[:people]
+				end
+				
+				people.each do |person|
+					puts persone.name
+				end
+				
+			
+			YAML
+			
+				Unlike PStore's data, humans can easily read YAML data
+				
+					require 'yaml'
+					
+					# Creating a person object
+					class Person
+						attr_accessor :name, :job, :gender, :age
+					end
+
+					fred = Person.new
+					fred.name = 'Fred'
+					fred.age = 45
+
+					# saving the object
+					test_data = [fred, laura]
+					puts YAML::dump(test_data)
+					
+
+?????????????????
+					yaml_string = <<END_OF_DATA
+					
+					test_data = YAML::load(yaml_string)
+					puts test_data[0].name
+					puts test_data[1].name
+??????????????????				
+			
+			
+			Relational Databases and SQL
+			
+				
+						
 		
 		
 		
